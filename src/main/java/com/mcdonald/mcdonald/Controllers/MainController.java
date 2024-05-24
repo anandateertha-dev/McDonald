@@ -1,37 +1,52 @@
 package com.mcdonald.mcdonald.Controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
 
+import com.mcdonald.mcdonald.GraphQlModels.UserInput;
+import com.mcdonald.mcdonald.Models.ResponseMessage;
 import com.mcdonald.mcdonald.Models.UserModel;
 import com.mcdonald.mcdonald.Services.UserService;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.http.ResponseEntity;
 
-@RestController
-@RequestMapping("api/mcdonald")
+@Controller
 public class MainController {
 
     @Autowired
     private UserService userService;
 
-    @PostMapping("user")
-    public String addUser(@RequestHeader String userName, @RequestHeader String password) {
-        UserModel user = new UserModel();
-        user.setUserName(userName);
-        user.setPassword(password);
-        return userService.addUserService(user);
+    @QueryMapping("allUsers")
+    public List<UserModel> getUsers() {
+        return userService.getAllUsersService();
     }
 
-    @GetMapping("login/{username}")
-    public String login(@PathVariable("username") String userName, @RequestHeader String password) {
-        UserModel user = new UserModel();
-        user.setUserName(userName);
-        user.setPassword(password);
-        return userService.loginService(user);
+    @QueryMapping("getUserById")
+    public Object getUserById(@Argument UUID userId) {
+        ResponseEntity<?> responseEntity = userService.getUserByIdService(userId);
+        if (responseEntity.getBody() instanceof UserModel) {
+            return responseEntity.getBody();
+        } else {
+            return responseEntity.getBody();
+        }
     }
 
+    @MutationMapping("createUser")
+    public ResponseMessage createUser(@Argument UserInput userInput) {
+        UserModel user = new UserModel();
+        user.setUserName(userInput.getUserName());
+        user.setPassword(userInput.getPassword());
+        ResponseEntity<ResponseMessage> responseEntity = userService.addUserService(user);
+        return responseEntity.getBody();
+    }
+
+    @MutationMapping("deleteUser")
+    public ResponseMessage deleteUser(@Argument UUID userId) {
+        ResponseEntity<ResponseMessage> responseEntity = userService.deleteUserService(userId);
+        return responseEntity.getBody();
+    }
 }

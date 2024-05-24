@@ -1,0 +1,27 @@
+type Mutation {
+    createUser(userInput: UserInput): ResponseMessage
+    deleteUser(userId:ID!):ResponseMessage
+}
+
+type Query {
+    allUsers: [UserModel]
+    getUserById(userId: ID!): UserResult
+}
+
+type UserModel {
+    id: ID!
+    userName: String!
+    password: String!
+}
+
+type ResponseMessage {
+    success: Boolean
+    message: String
+}
+
+input UserInput {
+    userName: String!
+    password: String!
+}
+
+union UserResult = UserModel | ResponseMessage
